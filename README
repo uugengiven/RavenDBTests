@@ -1,3 +1,7 @@
+Test kept on Github with a fix in place for other users who may have had the same issue.
+
+*****************
+
 This test, given some setup within the environment, will show how RavenDB has slow releases of sockets, causing potential socket overloads on servers.
 
 Required Setup:

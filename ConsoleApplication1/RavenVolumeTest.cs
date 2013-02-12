@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Connection;
+using System.Net;
 
 namespace RavenVolumeTest
 {
@@ -44,6 +46,21 @@ namespace RavenVolumeTest
         {
             IDocumentSession session = store.OpenSession();
 
+            // This call will allow for socket reuse but by itself it can have security issues
+            // see http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest.unsafeauthenticatedconnectionsharing.aspx
+            store.JsonRequestFactory.ConfigureRequest += (sender, eventArgs) => ((HttpWebRequest)eventArgs.Request).UnsafeAuthenticatedConnectionSharing = true;
+
+            // Creating a connectionGroupName will allow sharing of sockets only within a given
+            // collection. Normally this should be by user, to prevent unwanted access when
+            // impersonation is used.
+            SHA1Managed Sha1 = new SHA1Managed();
+            Byte[] updHash = Sha1.ComputeHash(Encoding.UTF8.GetBytes("username" + "password" + "domain"));
+            String secureGroupName = Encoding.Default.GetString(updHash);
+            store.JsonRequestFactory.ConfigureRequest += (sender, eventArgs) => ((HttpWebRequest)eventArgs.Request).ConnectionGroupName = secureGroupName;
+
+
+
+
             for (int i = 0; i < 20; i++)
             {
                 try
@@ -75,6 +92,7 @@ namespace RavenVolumeTest
             var store = new DocumentStore { Url = database, DefaultDatabase = defaultdb };
             store.Initialize();
             IDocumentSession session = store.OpenSession();
+
 
             try
             {
