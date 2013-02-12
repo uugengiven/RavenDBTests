@@ -1,0 +1,11 @@
+This test, given some setup within the environment, will show how RavenDB has slow releases of sockets, causing potential socket overloads on servers.
+
+Required Setup:
+
+Windows Authentication on RavenDB Server
+
+Limited set of ports available to verify crash
+
+- netsh int ipv4 set dynamicport tcp start=1025 num=4475
+
+While the test is running, netstat -a can be run to see the ports left in a TIME_WAIT state instead of being recycled
